@@ -10,7 +10,7 @@
 
     <modules>
         <module>broadcaster-icecast</module>
-        <module>core</module>
+        <module>hermodr-server</module>
     </modules>
 
 </project>

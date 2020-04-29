@@ -1,4 +1,4 @@
-package com.github.jpthiery.hermodr.broadcaster.infra.broadcaster.icecast.binding;
+package com.github.jpthiery.hermodr.infra.broadcaster.icecast.binding;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -27,6 +27,10 @@ public class BindingLibShout {
 
     public BindingResult open() {
         return execute(() -> shout_open(shoutInstancePtr));
+    }
+
+    public boolean isConnected() {
+        return shout_get_connected(shoutInstancePtr) == SHOUTERR_CONNECTED;
     }
 
     public BindingResult close() {
