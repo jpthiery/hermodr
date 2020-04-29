@@ -1,4 +1,4 @@
-package com.github.jpthiery.hermodr.broadcaster.infra.icecast;
+package com.github.jpthiery.hermodr.broadcaster.infra.broadcaster.icecast.binding;
 
 import org.jetbrains.annotations.NotNull;
 
