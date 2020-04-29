@@ -132,12 +132,77 @@ JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecas
 
 /*
  * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
- * Method:    open
+ * Method:    shout_set_public
+ * Signature: (JI)I
+ */
+JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1set_1public
+  (JNIEnv *env, jclass class, jlong shoutInstance, jint makePublic) {
+  return (jint)shout_set_public((void *)(intptr_t)shoutInstance, (int)makePublic);
+}
+
+/*
+ * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
+ * Method:    shout_set_format
+ * Signature: (JI)I
+ */
+JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1set_1format
+  (JNIEnv *env, jclass class, jlong shoutInstance, jint format) {
+  return (jint)shout_set_format((void *)(intptr_t)shoutInstance, (unsigned int)format);
+}
+
+/*
+ * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
+ * Method:    shout_set_protocol
+ * Signature: (JI)I
+ */
+JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1set_1protocol
+  (JNIEnv *env, jclass class, jlong shoutInstance, jint protocol) {
+    return (jint)shout_set_protocol((void *)(intptr_t)shoutInstance, (unsigned int)protocol);
+}
+
+/*
+ * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
+ * Method:    shout_open
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1open
+  (JNIEnv *env , jclass class, jlong shoutInstance) {
+  return (jint)shout_open((void *)(intptr_t)shoutInstance);
+}
+
+/*
+ * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
+ * Method:    shout_close
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1close
+  (JNIEnv *env, jclass class, jlong shoutInstance){
+  return (jint)shout_close((void *)(intptr_t)shoutInstance);
+}
+
+/*
+ * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
+ * Method:    shout_send
+ * Signature: (J[BI)I
+ */
+JNIEXPORT jint JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1send
+  (JNIEnv *env, jclass class, jlong shoutInstance, jbyteArray dataArray, jint dataLentght) {
+  jbyte *buffer;
+  int ret;
+  buffer = (*env)->GetByteArrayElements(env, dataArray, 0);
+  ret = shout_send((void *)(intptr_t)shoutInstance, (unsigned char*)buffer, (int)dataLentght);
+  (*env)->ReleaseByteArrayElements(env, dataArray, buffer, 0);
+  return (jint)ret;
+}
+
+/*
+ * Class:     com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout
+ * Method:    shout_sync
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_open
-  (JNIEnv *env, jclass class, jlong shoutInstance) {
-
+JNIEXPORT void JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_icecast_BindingLibShout_shout_1sync
+  (JNIEnv *env, jclass class, jlong shoutInstance){
+  shout_sync((void *)(intptr_t)shoutInstance);
 }
 
 /*
@@ -149,6 +214,3 @@ JNIEXPORT jstring JNICALL Java_com_github_jpthiery_hermodr_broadcaster_infra_ice
   (JNIEnv *env, jclass class, jint x, jint y, jint z) {
   return (*env)->NewStringUTF(env, shout_version((void *)(intptr_t)x, (void *)(intptr_t)y, (void *)(intptr_t)z));
 }
-
-
-//  const char *shout_version(int *major, int *minor, int *patch);
