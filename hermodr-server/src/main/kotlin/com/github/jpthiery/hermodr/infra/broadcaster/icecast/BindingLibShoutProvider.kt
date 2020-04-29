@@ -10,9 +10,33 @@ class BindingLibShoutProvider(
 
     fun provide(): BindingLibShout {
         val res = BindingLibShout(Paths.get(libPath))
-        res.setHost(configuration.host)
+        val mainSettingsResult = res.setHost(configuration.host)
                 .then { it.setPort(configuration.port) }
                 .then { it.setMount(configuration.mount) }
+        if (mainSettingsResult.isSuccess) {
+
+            res.setAgent("Hermodr")
+            res.setName("Awersome Hermodr")
+            res.setDescription("A shared playlist web radio.")
+            res.setGenre("Hard rock ?")
+            res.setUrl("http://localhost.fake")
+
+            when(configuration.format) {
+                IcecastFormat.MP3 -> res.sendMp3()
+                IcecastFormat.OGG -> res.sendOgg()
+            }
+
+            when(configuration.protocol) {
+                IcecastProtocol.HTTP -> res.useHttp()
+                IcecastProtocol.ROAR_AUDIO -> res.useRoarAudio()
+                IcecastProtocol.ICY -> res.useIcy()
+            }
+
+            if(configuration.user.isNotBlank()) {
+                res.setUser(configuration.user)
+                res.setPassword(configuration.password)
+            }
+        }
         return res
     }
 
@@ -34,7 +58,11 @@ data class IcecastConfiguration(
         val port: Int,
         val mount: String,
         val format: IcecastFormat = IcecastFormat.MP3,
-        val protocol: IcecastProtocol = IcecastProtocol.HTTP
+        val protocol: IcecastProtocol = IcecastProtocol.HTTP,
+        val name: String = "",
+        val user: String = "",
+        val password: String = "",
+        val description: String = ""
 ) {
     init {
         require(host.isNotBlank()) { "host must be defined." }
@@ -56,13 +84,20 @@ class IcecastConfigurationBuilder(
 ) {
     private var protocol: IcecastProtocol = IcecastProtocol.HTTP
     private var format: IcecastFormat = IcecastFormat.MP3
+    private var name: String = ""
+    private var user: String = ""
+    private var password: String = ""
+    private var description: String = ""
 
     fun build() = IcecastConfiguration(
             host,
             port,
             mount,
             format,
-            protocol
+            protocol,
+            name,
+            user, password,
+            description
     )
 
     fun useHttp(): IcecastConfigurationBuilder {
@@ -87,6 +122,22 @@ class IcecastConfigurationBuilder(
 
     fun sendOgg(): IcecastConfigurationBuilder {
         format = IcecastFormat.OGG
+        return this
+    }
+
+    fun name(name: String): IcecastConfigurationBuilder {
+        this.name = name
+        return this
+    }
+
+    fun description(description: String): IcecastConfigurationBuilder {
+        this.description = description
+        return this
+    }
+
+    fun auth(user: String, password: String): IcecastConfigurationBuilder {
+        this.user = user
+        this.password = password
         return this
     }
 
