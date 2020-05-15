@@ -6,6 +6,7 @@ import java.nio.file.Path;
 
 public class BindingLibShout {
 
+    private static final String SONG_METADATA = "song";
     private static boolean loaded = false;
 
     private final long shoutInstancePtr;
@@ -31,6 +32,11 @@ public class BindingLibShout {
 
     public boolean isConnected() {
         return shout_get_connected(shoutInstancePtr) == SHOUTERR_CONNECTED;
+    }
+  
+ 
+    public boolean isNotConnected() {
+        return !isConnected();
     }
 
     public BindingResult close() {
@@ -89,6 +95,21 @@ public class BindingLibShout {
         return setFormat(SHOUT_FORMAT_OGG);
     }
 
+    public BindingResult setName(String name) {
+        return execute(() -> shout_set_name(shoutInstancePtr, name));
+    }
+
+    public BindingResult setDescription(String description) {
+        return execute(() -> shout_set_description(shoutInstancePtr, description));
+    }
+
+    public BindingResult setGenre(String genre) {
+        return execute(() -> shout_set_genre(shoutInstancePtr, genre));
+    }
+    public BindingResult setUrl(String url) {
+        return execute(() -> shout_set_url(shoutInstancePtr, url));
+    }
+
     public BindingResult send(byte[] data, int length) {
         return execute(() -> {
             var res = shout_send(shoutInstancePtr, data, length);
@@ -96,6 +117,25 @@ public class BindingLibShout {
             return res;
         });
 
+    }
+
+    public BindingResult sendSongMetadata(String metadata) {
+        return execute(() -> {
+            long metadataPtr = shout_metadata_new();
+            int res = 0;
+            int addMetadataResult = shout_metadata_add(metadataPtr, SONG_METADATA, metadata);
+            if (addMetadataResult == SHOUTERR_SUCCESS) {
+                res = shout_set_metadata(shoutInstancePtr, metadataPtr);
+            } else {
+                res = addMetadataResult;
+            }
+            shout_metadata_free(metadataPtr);
+            return res;
+        });
+    }
+
+    public BindingResult setAgent(String agent) {
+        return execute(() -> shout_set_agent(shoutInstancePtr, agent));
     }
 
     private interface Callback {
@@ -172,6 +212,24 @@ public class BindingLibShout {
     private native static void shout_sync(long shoutInstancePtr);
 
     private native static String shout_version(int major, int minor, int patch);
+
+    //  int shout_set_name(shout_t *self, const char *name); // obsolete
+    private native static int shout_set_name(long shoutInstancePtr, String name);
+
+    // int shout_set_description(shout_t *self, const char *description); // obsolete
+    private native static int shout_set_description(long shoutInstancePtr, String decription);
+
+    private native static int shout_set_genre(long shoutInstancePtr, String genre);
+
+    private native static int shout_set_url(long shoutInstancePtr, String url);
+
+    private native static long shout_metadata_new();
+
+    private native static int shout_set_metadata(long shoutInstancePtr, long metadataPtr);
+
+    private native static int shout_metadata_add(long metadataPtr, String key, String value);
+
+    private native static void shout_metadata_free(long metadataPtr);
 
     private final int SHOUTERR_SUCCESS = 0; /* No error */
     private final int SHOUTERR_INSANE = -1; /* Nonsensical arguments e.g. self being NULL */
