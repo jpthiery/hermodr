@@ -33,6 +33,8 @@ public class BindingLibShout {
     public boolean isConnected() {
         return shout_get_connected(shoutInstancePtr) == SHOUTERR_CONNECTED;
     }
+  
+ 
     public boolean isNotConnected() {
         return !isConnected();
     }

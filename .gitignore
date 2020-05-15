@@ -32,8 +32,10 @@ target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
-release.properties
 
 # Other
 *.mp3
 *.mp4
+
+release.properties
+
