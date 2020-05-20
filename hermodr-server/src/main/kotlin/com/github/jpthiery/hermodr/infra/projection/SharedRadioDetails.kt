@@ -105,7 +105,7 @@ class SharedRadioDetails : AbstractVerticle() {
     private fun getDefaultMusic(): JsonObject {
         val element = JsonObject()
         element.put("id", MusicScheme.LOCALFILE.scheme + defaultMusicPath.createMusicId())
-        element.put("title", defaultMusicPath)
+        element.put("title", defaultMusicTitle)
         element.put("source", MusicScheme.LOCALFILE.name)
         element.put("validated", true)
         return element

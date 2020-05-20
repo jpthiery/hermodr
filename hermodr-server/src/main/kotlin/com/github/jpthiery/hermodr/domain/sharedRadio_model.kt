@@ -25,7 +25,18 @@ data class CreateSharedRadio(override val id: SharedRadioId, val name: String, v
 data class AddMusicToSharedRadio(override val id: SharedRadioId, val music: Music) : SharedRadioCommand()
 
 @RegisterForReflection
-data class ValidateMusicToSharedRadio(override val id: SharedRadioId, val musicId: MusicId, val title: String, val scheme: MusicScheme, val location: String) : SharedRadioCommand()
+data class RemovedMusicToSharedRadio(override val id: SharedRadioId, val musicId: MusicId) : SharedRadioCommand()
+
+@RegisterForReflection
+data class ValidateMusicToSharedRadio(
+        override val id: SharedRadioId,
+        val musicId: MusicId,
+        val title: String,
+        val scheme: MusicScheme,
+        val location: String,
+        val artist: String = "",
+        val album: String = ""
+) : SharedRadioCommand()
 
 @RegisterForReflection
 data class StartMusicToSharedRadio(override val id: SharedRadioId, val musicId: MusicId) : SharedRadioCommand()
@@ -45,6 +56,9 @@ data class SharedRadioCreated(override val id: SharedRadioId, val name: String) 
 
 @RegisterForReflection
 data class MusicAdded(override val id: SharedRadioId, val music: Music) : SharedRadioEvent()
+
+@RegisterForReflection
+data class MusicRemoved(override val id: SharedRadioId, val musicId: MusicId) : SharedRadioEvent()
 
 @RegisterForReflection
 data class MusicValidated(override val id: SharedRadioId, val music: Music) : SharedRadioEvent()

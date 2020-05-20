@@ -44,6 +44,7 @@ class SharedRadioEndpointQuery {
                     when (it) {
                         is MusicValidated -> SharedRadioEventWrapper(it, it.music.id)
                         is MusicAdded -> SharedRadioEventWrapper(it, it.music.id)
+                        is MusicRemoved -> SharedRadioEventWrapper(it, it.musicId)
                         is MusicStarted -> SharedRadioEventWrapper(it, it.musicId)
                         is MusicEnded -> SharedRadioEventWrapper(it, it.musicId)
                         else -> SharedRadioEventWrapper(it, "Unkown".createMusicId())

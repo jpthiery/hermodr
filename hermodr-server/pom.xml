@@ -45,6 +45,10 @@
             <artifactId>quarkus-resteasy</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-multipart-provider</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-vertx</artifactId>
         </dependency>
@@ -225,7 +229,7 @@
                             <outputDirectory>${basedir}/target/classes/META-INF/resources/</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>src/main/webapp/build/static</directory>
+                                    <directory>src/main/webapp/build</directory>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>

@@ -10,13 +10,18 @@ class LogEventBus {
 
     private final val logger = LoggerFactory.getLogger(LogEventBus::class.java)
 
-    @ConsumeEvent("application_error")
+    @ConsumeEvent("application.error")
     fun consumeApplicationErrorEvent(message: Message<String>) {
         logger.error(message.body())
     }
-    
+
     @ConsumeEvent("application.broadcaster")
     fun consumeApplicationBroadcasterEvent(message: Message<String>) {
+        logger.info(message.body())
+    }
+
+    @ConsumeEvent("domain.event")
+    fun consumeDomainEvent(message: Message<String>) {
         logger.info(message.body())
     }
 

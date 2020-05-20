@@ -27,6 +27,8 @@ class CommandHandler(
                         }
                         else -> NoopToHandleCommand(command)
                     }
+
+                    logger.debug("${message.body()} -> $commandResult")
                     message.reply(commandResult)
                 }
     }

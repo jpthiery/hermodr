@@ -20,5 +20,7 @@ data class Music(
         val id: MusicId,
         val scheme: MusicScheme,
         val location: String,
-        val title: String
+        val title: String,
+        val artist: String = "",
+        val album: String = ""
 )

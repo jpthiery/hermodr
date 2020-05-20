@@ -2,7 +2,7 @@ import React from "react";
 import RadioMetadata from "../components/radio_metadata/RadioMetadata";
 import OnAir from "../components/currentPlay/OnAir";
 import Playlist from "../components/playlist/Playlist";
-import AddMusic from "../components/addMusic/AddYoutubeMusic";
+import AddMusic from "../components/addMusic/AddMusic";
 import {connect} from "react-redux";
 import {currentPlay, currentRadio} from "../redux/selectors";
 import './radio.css'

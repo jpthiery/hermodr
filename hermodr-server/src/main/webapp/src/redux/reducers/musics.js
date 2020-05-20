@@ -43,16 +43,21 @@ export default function (state = initialState, action) {
     }
     case VALIDATE_MUSIC: {
       const {music} = action.payload;
+      const oldPlaylist = state.radios[music.radioId].playlist
+      const newPlaylist = []
+      oldPlaylist.forEach(value => {
+        if (value.id !== music.id) {
+          newPlaylist.push(value)
+        }
+      })
+      newPlaylist.push(music)
       return {
         ...state,
         radios: {
           ...state.radios,
           [music.radioId]: {
             ...state.radios[music.radioId],
-            playlist: [
-              ...state.radios[music.radioId].playlist,
-              music
-            ]
+            playlist: newPlaylist
           }
         }
       };

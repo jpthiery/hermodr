@@ -21,148 +21,147 @@ import Typography from "@material-ui/core/Typography";
 
 export const AddMusic = ({defaultSelectedSource, radioId, musicsSubmittedToServer, submitMusicToServer}) => {
 
-  const [disableAdd, setDisableAdd] = React.useState(true)
-  const [selectedSource, setSelectedSource] = React.useState(defaultSelectedSource)
-  const [inputFieldValue, setInputFieldValue] = React.useState("")
+    const [disableAdd, setDisableAdd] = React.useState(true)
+    const [selectedSource, setSelectedSource] = React.useState(defaultSelectedSource)
+    const [inputFieldValue, setInputFieldValue] = React.useState("")
 
-  const onDrop = useCallback((acceptedFiles) => {
-    acceptedFiles.forEach((file) => {
-      const reader = new FileReader()
+    const onDrop = useCallback((acceptedFiles) => {
+        acceptedFiles.forEach((file) => {
+            console.info(file)
 
-      reader.onabort = () => console.log('file reading was aborted')
-      reader.onerror = () => console.log('file reading has failed')
-      reader.onload = () => {
-        // Do whatever you want with the file contents
-        console.info( file)
-        const binaryStr = reader.result
-        console.log(binaryStr)
-      }
-      reader.readAsArrayBuffer(file)
-    })
+            submitMusicToServer(radioId, {
+                source: "LOCALFILE",
+                file: file
+            })
 
-  }, [])
-  const {getRootProps, getInputProps} = useDropzone({onDrop})
+        })
 
-  const {ref, ...rootProps} = getRootProps()
-  const sourceAvailable = [
-    {
-      name: "local",
-      icon: faDownload
-    },
-    {
-      name: "youtube",
-      icon: faYoutube
+    }, [])
+    const {getRootProps, getInputProps} = useDropzone({onDrop})
+
+    const {ref, ...rootProps} = getRootProps()
+    const sourceAvailable = [
+        {
+            name: "local",
+            icon: faDownload
+        },
+        {
+            name: "youtube",
+            icon: faYoutube
+        }
+    ]
+
+    if (musicsSubmittedToServer.hasOwnProperty(inputFieldValue)) {
+        setInputFieldValue("")
+        setDisableAdd(true)
     }
-  ]
 
-
-
-  const handleSourceChange = (event) => {
-    setSelectedSource(event.target.value)
-  }
-
-  const handleReferenceChange = (event) => {
-    let reference = event.target.value
-    switch (selectedSource) {
-      case "youtube":
-        reference = extractYoutubeReference(reference)
-        setDisableAdd(!/^[0-9A-Za-z_-]{11,}$/.test(reference))
-        break
+    const handleSourceChange = (event) => {
+        setSelectedSource(event.target.value)
     }
-    setInputFieldValue(event.target.value)
-  }
-  const handleAddMusic = (event) => {
-    submitMusicToServer(radioId, {
-      source: "YOUTUBE",
-      reference: extractYoutubeReference(inputFieldValue)
-    })
-  }
 
-  const extractYoutubeReference = (inputValue) => {
-    try {
-      const url = new URL(inputValue)
-      if (url.host.startsWith("www.youtube")) {
-        return url.searchParams.get("v")
-      }
-    } catch (e) {
-
+    const handleReferenceChange = (event) => {
+        let reference = event.target.value
+        switch (selectedSource) {
+            case "youtube":
+                reference = extractYoutubeReference(reference)
+                setDisableAdd(!/^[0-9A-Za-z_-]{11,}$/.test(reference))
+                break
+        }
+        setInputFieldValue(event.target.value)
     }
-    return inputFieldValue
-  }
+    const handleAddMusic = (event) => {
+        submitMusicToServer(radioId, {
+            source: "YOUTUBE",
+            reference: extractYoutubeReference(inputFieldValue)
+        })
+    }
 
-  const defineReferenceComponent = () => {
-    switch (selectedSource) {
-      case "youtube":
-        return <Box flexGrow={1}>
-          <TextField
-            name="youtube_location"
-            variant="outlined"
-            size="small"
-            fullWidth={true}
-            label="Youtube url video"
-            value={inputFieldValue}
-            onChange={(e) => handleReferenceChange(e)}/>
-        </Box>
-      case "local":
-        return <Box flexGrow={1}>
-          <RootRef rootRef={ref}>
-            <Paper {...rootProps} elevation={3}>
-              <Box display="flex" justifyContent="center" alignItem="center">
-                <Box style={{flex: "0 1 120px"}} justifyContent="center" alignItem="center">
-                  <input {...getInputProps()} />
-                    <FontAwesomeIcon icon={faCloudDownloadAlt} size={"3x"} style={{margin: "auto"}}/>
-                  <Typography component="h2" style={{width: "max-content"}}>
-                    Drag 'n' drop some musics files you want to share here.
-                  </Typography>
+    const extractYoutubeReference = (inputValue) => {
+        try {
+            const url = new URL(inputValue)
+            if (url.host.startsWith("www.youtube")) {
+                return url.searchParams.get("v")
+            }
+        } catch (e) {
+
+        }
+        return inputFieldValue
+    }
+
+    const defineReferenceComponent = () => {
+        switch (selectedSource) {
+            case "youtube":
+                return <Box flexGrow={1}>
+                    <TextField
+                        name="youtube_location"
+                        variant="outlined"
+                        size="small"
+                        fullWidth={true}
+                        label="Youtube url video"
+                        value={inputFieldValue}
+                        onChange={(e) => handleReferenceChange(e)}/>
                 </Box>
-              </Box>
-            </Paper>
-          </RootRef>
-        </Box>
+            case "local":
+                return <Box flexGrow={1}>
+                    <RootRef rootRef={ref}>
+                        <Paper {...rootProps} elevation={3}>
+                            <Box display="flex" justifyContent="center" alignItem="center">
+                                <Box style={{flex: "0 1 120px"}} justifyContent="center" alignItem="center">
+                                    <input {...getInputProps()} />
+                                    <FontAwesomeIcon icon={faCloudDownloadAlt} size={"3x"} style={{margin: "auto"}}/>
+                                    <Typography component="h2" style={{width: "max-content"}}>
+                                        Drag 'n' drop some musics files you want to share here.
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Paper>
+                    </RootRef>
+                </Box>
+        }
     }
-  }
 
-  return (
-    <Card>
-      <CardContent>
-        <Box display="flex" flexDirection="row">
-          <Box style={{marginRight: 10}}>
-            <Select defaultValue={defaultSelectedSource} onChange={e => handleSourceChange(e)}>
-              {sourceAvailable.map(value => {
-                return (
-                  <MenuItem value={value.name}>
-                    {value.name.charAt(0).toUpperCase() + value.name.slice(1)}
-                    <FontAwesomeIcon style={{marginLeft: 10}} icon={value.icon}/>
-                  </MenuItem>
-                )
-              })}
-            </Select>
-          </Box>
-          {defineReferenceComponent()}
-        </Box>
-      </CardContent>
-      <CardActionArea>
-        <Button
-          disabled={disableAdd}
-          onClick={(event) => handleAddMusic(event)}
-        >
-          Add to playlist
-        </Button>
-      </CardActionArea>
-    </Card>
+    return (
+        <Card>
+            <CardContent>
+                <Box display="flex" flexDirection="row">
+                    <Box style={{marginRight: 10}}>
+                        <Select defaultValue={defaultSelectedSource} onChange={e => handleSourceChange(e)}>
+                            {sourceAvailable.map(value => {
+                                return (
+                                    <MenuItem value={value.name}>
+                                        {value.name.charAt(0).toUpperCase() + value.name.slice(1)}
+                                        <FontAwesomeIcon style={{marginLeft: 10}} icon={value.icon}/>
+                                    </MenuItem>
+                                )
+                            })}
+                        </Select>
+                    </Box>
+                    {defineReferenceComponent()}
+                </Box>
+            </CardContent>
+            <CardActionArea>
+                <Button
+                    disabled={disableAdd}
+                    onClick={(event) => handleAddMusic(event)}
+                >
+                    Add to playlist
+                </Button>
+            </CardActionArea>
+        </Card>
 
-  )
+    )
 }
 
 
 const mapStateToProps = state => {
-  const radioId = radioSelected(state);
-  const musicsSubmittedToServer = musicSubmitted(state)
-  const defaultSelectedSource = "youtube"
-  return {defaultSelectedSource, radioId, musicsSubmittedToServer};
+    const radioId = radioSelected(state);
+    const musicsSubmittedToServer = musicSubmitted(state)
+    const defaultSelectedSource = "youtube"
+    return {defaultSelectedSource, radioId, musicsSubmittedToServer};
 };
 
 export default connect(
-  mapStateToProps,
-  {submitMusicToServer}
+    mapStateToProps,
+    {submitMusicToServer}
 )(AddMusic)

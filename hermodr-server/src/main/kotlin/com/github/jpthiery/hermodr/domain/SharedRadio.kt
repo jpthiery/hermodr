@@ -50,9 +50,14 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                                 MusicAdded(state.id, command.music)
                         )
                 )
+                is RemovedMusicToSharedRadio -> {
+                    Either.right(
+                            emptyList()
+                    )
+                }
                 is ValidateMusicToSharedRadio -> Either.right(
                         listOf(
-                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title))
+                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title, command.artist, command.album))
                         )
                 )
                 is StartMusicToSharedRadio -> Either.right(
@@ -71,14 +76,34 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
     private fun decideOnBroadcasting(command: SharedRadioCommand, state: SharedRadioBroadcasting): Either<String, List<SharedRadioEvent>> =
             when (command) {
                 is CreateSharedRadio -> Either.left("Shared radio ${command.name} already exist.")
-                is AddMusicToSharedRadio -> Either.right(
-                        listOf(
-                                MusicAdded(state.id, command.music)
+                is AddMusicToSharedRadio -> {
+                    if (state.playlist.contains(command.music.id)) {
+                        Either.right(emptyList())
+                    } else {
+                        Either.right(
+                                listOf(
+                                        MusicAdded(state.id, command.music)
+                                )
                         )
-                )
+                    }
+                }
+                is RemovedMusicToSharedRadio -> {
+                    println(state)
+                    if (state.playlist.contains(command.musicId) || state.playlistValidating.contains(command.musicId)) {
+                        Either.right(
+                                listOf(
+                                        MusicRemoved(state.id, command.musicId)
+                                )
+                        )
+                    } else {
+                        Either.right(
+                                emptyList()
+                        )
+                    }
+                }
                 is ValidateMusicToSharedRadio -> Either.right(
                         listOf(
-                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title))
+                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title, command.artist, command.album))
                         )
                 )
                 is StartMusicToSharedRadio -> Either.right(
@@ -135,6 +160,20 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                     }
                     val newPlaylist = state.playlist.toMutableList()
                     newPlaylist.add(event.music.id)
+                    state.copy(
+                            playlistValidating = newPlaylistValidating.toList(),
+                            playlist = newPlaylist.toList()
+                    )
+                }
+                is MusicRemoved -> {
+                    val newPlaylistValidating = state.playlistValidating.toMutableList()
+                    if (state.playlistValidating.contains(event.musicId)) {
+                        newPlaylistValidating.remove(event.musicId)
+                    }
+                    val newPlaylist = state.playlist.toMutableList()
+                    if (state.playlist.contains(event.musicId)) {
+                        newPlaylist.remove(event.musicId)
+                    }
                     state.copy(
                             playlistValidating = newPlaylistValidating.toList(),
                             playlist = newPlaylist.toList()

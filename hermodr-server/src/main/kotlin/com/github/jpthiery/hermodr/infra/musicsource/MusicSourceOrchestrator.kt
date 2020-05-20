@@ -2,6 +2,7 @@ package com.github.jpthiery.hermodr.infra.musicsource
 
 import com.github.jpthiery.hermodr.application.BusAddresses
 import com.github.jpthiery.hermodr.domain.*
+import com.github.jpthiery.hermodr.infra.musicsource.local.LocalFileMusicSource
 import com.github.jpthiery.hermodr.infra.musicsource.youtube.YoutubeMusicSource
 import io.quarkus.vertx.ConsumeEvent
 import io.vertx.core.AbstractVerticle
@@ -60,7 +61,7 @@ class MusicSourceOrchestrator : AbstractVerticle() {
                             if (!fetchingVerticle.containsKey(musicId)) {
                                 val musicSource = when (event.music.scheme) {
                                     MusicScheme.YOUTUBE -> YoutubeMusicSource()
-                                    else -> YoutubeMusicSource()// :D
+                                    MusicScheme.LOCALFILE -> LocalFileMusicSource()
                                 }
                                 runMusicSource(musicSource, event, outputFile)
                             } else {
@@ -77,8 +78,21 @@ class MusicSourceOrchestrator : AbstractVerticle() {
     private fun runMusicSource(musicSource: MusicSource, musicAdded: MusicAdded, outputFile: File) {
         val task = {
             logger.info("Starting music source ${musicSource::class.java.simpleName}")
+            logger.debug("Starting music source ${musicSource::class.java.simpleName} with input music ${musicAdded.music} to ${outputFile.absolutePath}.")
             musicSource.fetch(musicAdded.music, outputFile).fold(
-                    { err -> logger.error("Unable to fetch ${musicAdded.music}", err) },
+                    { err ->
+                        logger.error("Unable to fetch ${musicAdded.music}", err)
+                        val command = RemovedMusicToSharedRadio(
+                                musicAdded.id,
+                                musicAdded.music.id
+                        )
+                        eventBus.send(
+                                BusAddresses.DOMAIN_COMMAND.address,
+                                command
+                        )
+                        logger.error("Request music to be delete: {}", command,  err)
+
+                    },
                     { musicStore ->
                         logger.info("Successfully fetch ${musicAdded.music}")
                         fetchedMusic.add(musicStore)
@@ -89,11 +103,14 @@ class MusicSourceOrchestrator : AbstractVerticle() {
                                         musicAdded.music.id,
                                         musicStore.title,
                                         musicStore.scheme,
-                                        musicStore.location
+                                        musicStore.location,
+                                        musicStore.artist,
+                                        musicStore.album
                                 )
                         )
                     }
             )
+            logger.debug("Processing ${musicAdded.music} done.")
         }
         fetchingVerticle[musicAdded.music.id] = musicSource
         executorService.submit(task)

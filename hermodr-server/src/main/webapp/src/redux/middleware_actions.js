@@ -43,7 +43,6 @@ function fetchRadioDetail(radioId) {
 
         const source = new EventSource(`/sharedRadio/query/${radioId}/events`);
         source.onmessage = function (event) {
-          //document.getElementById("result").innerHTML += event.data + "<br>";
           const eventData = JSON.parse(event.data)
           if (eventData['eventType'] && eventData['radioId'] && eventData['content']) {
             const music = {
@@ -58,6 +57,7 @@ function fetchRadioDetail(radioId) {
                   type: "info",
                   autoClose: 5000
                 });
+                dispatch(addMusic(music))
                 break
               case "MusicValidated":
                 dispatch(validateMusic(music))

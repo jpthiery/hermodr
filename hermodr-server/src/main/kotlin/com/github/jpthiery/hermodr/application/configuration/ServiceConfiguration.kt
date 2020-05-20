@@ -12,6 +12,7 @@ import com.github.jpthiery.hermodr.infra.projection.SharedRadioDetails
 import io.quarkus.runtime.StartupEvent
 import io.vertx.core.Vertx
 import org.eclipse.microprofile.config.inject.ConfigProperty
+import java.io.File
 import javax.enterprise.context.Dependent
 import javax.enterprise.event.Observes
 import javax.enterprise.inject.Produces
@@ -28,6 +29,9 @@ class ServiceConfiguration {
 
     @ConfigProperty(name = "broadcaster.icecast.port")
     var icecastPort: Int = 8000
+
+    @ConfigProperty(name = "radio.defaultMusic.upload.dir")
+    lateinit var musicUploadedDirectory: String
 
     @Produces
     @Singleton
@@ -64,32 +68,12 @@ class ServiceConfiguration {
     }
 
     fun startMusicDetailsRepository(@Observes startupEvent: StartupEvent, vertx: Vertx, musicDetailsRepository: MusicDetailsRepository) {
+        val uploadedFileDirectory = File(musicUploadedDirectory)
+        if (!uploadedFileDirectory.exists()) {
+            uploadedFileDirectory.mkdirs()
+        }
         vertx.deployVerticle(musicDetailsRepository)
     }
 
-    fun startVertx(@Observes startupEvent: StartupEvent, vertx: Vertx) {
-        val eventBus = vertx.eventBus()
-
-        eventBus.registerDefaultCodec(SharedRadioId::class.java, DomainBusCodec(SharedRadioId::class.java))
-        eventBus.registerDefaultCodec(MusicId::class.java, DomainBusCodec(MusicId::class.java))
-
-        eventBus.registerDefaultCodec(CreateSharedRadio::class.java, DomainBusCodec(CreateSharedRadio::class.java))
-        eventBus.registerDefaultCodec(AddMusicToSharedRadio::class.java, DomainBusCodec(AddMusicToSharedRadio::class.java))
-        eventBus.registerDefaultCodec(ValidateMusicToSharedRadio::class.java, DomainBusCodec(ValidateMusicToSharedRadio::class.java))
-        eventBus.registerDefaultCodec(StartMusicToSharedRadio::class.java, DomainBusCodec(StartMusicToSharedRadio::class.java))
-        eventBus.registerDefaultCodec(EndMusicToSharedRadio::class.java, DomainBusCodec(EndMusicToSharedRadio::class.java))
-
-        eventBus.registerDefaultCodec(SharedRadioCreated::class.java, DomainBusCodec(SharedRadioCreated::class.java))
-        eventBus.registerDefaultCodec(MusicAdded::class.java, DomainBusCodec(MusicAdded::class.java))
-        eventBus.registerDefaultCodec(MusicValidated::class.java, DomainBusCodec(MusicValidated::class.java))
-        eventBus.registerDefaultCodec(MusicStarted::class.java, DomainBusCodec(MusicStarted::class.java))
-        eventBus.registerDefaultCodec(MusicFinished::class.java, DomainBusCodec(MusicFinished::class.java))
-        eventBus.registerDefaultCodec(MusicEnded::class.java, DomainBusCodec(MusicEnded::class.java))
-
-        eventBus.registerDefaultCodec(SuccessfullyHandleCommand::class.java, DomainBusCodec(SuccessfullyHandleCommand::class.java))
-        eventBus.registerDefaultCodec(FailedToHandleCommand::class.java, DomainBusCodec(FailedToHandleCommand::class.java))
-        eventBus.registerDefaultCodec(NoopToHandleCommand::class.java, DomainBusCodec(NoopToHandleCommand::class.java))
-
-    }
 
 }

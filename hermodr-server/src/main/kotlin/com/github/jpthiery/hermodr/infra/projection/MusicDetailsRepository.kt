@@ -59,6 +59,8 @@ class MusicDetailsRepository : AbstractVerticle() {
             is MusicValidated -> {
                 res.put("id", event.music.id)
                 res.put("title", event.music.title)
+                res.put("artist", event.music.artist)
+                res.put("album", event.music.album)
                 res.put("validated", true)
             }
             else -> {}
