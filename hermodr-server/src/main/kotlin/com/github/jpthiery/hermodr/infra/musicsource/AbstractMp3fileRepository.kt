@@ -29,16 +29,20 @@ abstract class AbstractMp3fileRepository : MusicSource {
                         val id3Tag = mp3Tag.id3v1Tag
                         music.copy(
                                 title = id3Tag.title,
+                                location = destination.absolutePath,
                                 album = id3Tag.album,
-                                artist = id3Tag.artist
+                                artist = id3Tag.artist,
+                                duration = mp3Tag.lengthInSeconds
                         )
                     }
                     mp3Tag.hasId3v2Tag() -> {
                         val id3Tag = mp3Tag.id3v2Tag
                         music.copy(
                                 title = id3Tag.title,
+                                location = destination.absolutePath,
                                 album = id3Tag.album,
-                                artist = id3Tag.artist
+                                artist = id3Tag.artist,
+                                duration = mp3Tag.lengthInSeconds
                         )
                     }
                     else -> {
@@ -67,9 +71,11 @@ abstract class AbstractMp3fileRepository : MusicSource {
             val encoder = Encoder();
             encoder.encode(MultimediaObject(inputFile), destination, attrs);
             logger.debug("Convert to mp3 file ${destination.absolutePath}.")
+            val mp3Tag = Mp3File(destination)
             return Either.right(
                     music.copy(
-                            location = destination.absolutePath
+                            location = destination.absolutePath,
+                            duration = mp3Tag.lengthInSeconds
                     )
             )
         }

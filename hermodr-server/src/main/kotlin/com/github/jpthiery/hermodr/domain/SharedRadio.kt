@@ -32,11 +32,7 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                                         MusicScheme.LOCALFILE,
                                         command.defaultMusic.location,
                                         command.defaultMusic.title
-                                )),
-                                MusicValidated(
-                                        command.id,
-                                        command.defaultMusic
-                                )
+                                ))
                         )
                 )
                 else -> Either.right(emptyList())
@@ -50,14 +46,14 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                                 MusicAdded(state.id, command.music)
                         )
                 )
-                is RemovedMusicToSharedRadio -> {
+                is RefusedMusicToSharedRadio -> {
                     Either.right(
                             emptyList()
                     )
                 }
                 is ValidateMusicToSharedRadio -> Either.right(
                         listOf(
-                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title, command.artist, command.album))
+                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title, command.artist, command.album, command.duration))
                         )
                 )
                 is StartMusicToSharedRadio -> Either.right(
@@ -76,23 +72,21 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
     private fun decideOnBroadcasting(command: SharedRadioCommand, state: SharedRadioBroadcasting): Either<String, List<SharedRadioEvent>> =
             when (command) {
                 is CreateSharedRadio -> Either.left("Shared radio ${command.name} already exist.")
-                is AddMusicToSharedRadio -> {
+                is AddMusicToSharedRadio -> ifMusicNotRefusedDo(state, command.music.id) {
                     if (state.playlist.contains(command.music.id)) {
-                        Either.right(emptyList())
+                        emptyList()
                     } else {
-                        Either.right(
-                                listOf(
-                                        MusicAdded(state.id, command.music)
-                                )
+                        listOf(
+                                MusicAdded(state.id, command.music)
                         )
+
                     }
                 }
-                is RemovedMusicToSharedRadio -> {
-                    println(state)
+                is RefusedMusicToSharedRadio -> {
                     if (state.playlist.contains(command.musicId) || state.playlistValidating.contains(command.musicId)) {
                         Either.right(
                                 listOf(
-                                        MusicRemoved(state.id, command.musicId)
+                                        MusicRefused(state.id, command.musicId)
                                 )
                         )
                     } else {
@@ -101,23 +95,24 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                         )
                     }
                 }
-                is ValidateMusicToSharedRadio -> Either.right(
-                        listOf(
-                                MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title, command.artist, command.album))
-                        )
-                )
-                is StartMusicToSharedRadio -> Either.right(
-                        listOf(
-                                MusicStarted(state.id, command.musicId)
-                        )
-                )
-                is EndMusicToSharedRadio -> Either.right(
-                        listOf(
-                                MusicFinished(state.id, command.musicId),
-                                MusicEnded(state.id, command.musicId)
-                        )
-                )
+                is ValidateMusicToSharedRadio -> ifMusicNotRefusedDo(state, command.musicId) {
+                    listOf(
+                            MusicValidated(state.id, Music(command.musicId, command.scheme, command.location, command.title, command.artist, command.album, command.duration))
+                    )
+                }
+                is StartMusicToSharedRadio -> ifMusicNotRefusedDo(state, command.musicId) {
+                    listOf(
+                            MusicStarted(state.id, command.musicId)
+                    )
+                }
+                is EndMusicToSharedRadio -> ifMusicNotRefusedDo(state, command.musicId) {
+                    listOf(
+                            MusicFinished(state.id, command.musicId),
+                            MusicEnded(state.id, command.musicId)
+                    )
+                }
             }
+
 
     private fun applyOnNotExist(event: SharedRadioEvent) =
             when (event) {
@@ -165,7 +160,7 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                             playlist = newPlaylist.toList()
                     )
                 }
-                is MusicRemoved -> {
+                is MusicRefused -> {
                     val newPlaylistValidating = state.playlistValidating.toMutableList()
                     if (state.playlistValidating.contains(event.musicId)) {
                         newPlaylistValidating.remove(event.musicId)
@@ -174,11 +169,25 @@ class SharedRadio : Aggregate<SharedRadioCommand, SharedRadioState, SharedRadioE
                     if (state.playlist.contains(event.musicId)) {
                         newPlaylist.remove(event.musicId)
                     }
+                    val newRefused = state.musicsRefused.toMutableList()
+                    newRefused.add(event.musicId)
                     state.copy(
-                            playlistValidating = newPlaylistValidating.toList(),
-                            playlist = newPlaylist.toList()
+                            playlistValidating = newRefused.toList(),
+                            playlist = newPlaylist.toList(),
+                            musicsRefused = newRefused.toList()
                     )
                 }
                 else -> state
+            }
+
+    private fun ifMusicNotRefusedDo(
+            sharedRadioBroadcasting: SharedRadioBroadcasting,
+            musicId: MusicId,
+            then: () -> List<SharedRadioEvent>
+    ): Either<String, List<SharedRadioEvent>> =
+            if (sharedRadioBroadcasting.musicsRefused.contains(musicId)) {
+                Either.left("Music $musicId had been refused.")
+            } else {
+                Either.right(then.invoke())
             }
 }

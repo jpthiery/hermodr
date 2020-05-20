@@ -58,6 +58,39 @@ const allMusics = [
     title: "My customer song",
     source: "User",
     validated: false
+  },
+  {
+    id: "E",
+    radioId: "A",
+    title: "A little song  Authored",
+    artist: "Myself",
+    source: "Youtube",
+    validated: false
+  },
+  {
+    id: "F",
+    radioId: "A",
+    title: "A love song Authored",
+    artist: "Myself",
+    album: "Poesie and co",
+    source: "User",
+    validated: true
+  },
+  {
+    id: "G",
+    radioId: "A",
+    title: "Hymne national Authored",
+    artist: "Myself",
+    album: "Poesie and co",
+    source: "Youtube",
+    validated: true
+  },
+  {
+    id: "H",
+    radioId: "A",
+    title: "My customer song",
+    source: "User",
+    validated: false
   }
 ]
 

@@ -22,11 +22,18 @@ class BroadcasterInputEventHandler {
     @field:Default
     lateinit var vertx: Vertx
 
+    @Inject
+    @field:Default
+    lateinit var libShoutProvider: BindingLibShoutProvider
+
     @ConfigProperty(name = "radio.defaultMusic.path")
     lateinit var defaultMusicPath: String
 
     @ConfigProperty(name = "radio.defaultMusic.title")
     lateinit var defaultMusicTitle: String
+
+    @ConfigProperty(name = "broadcaster.icecast.libshoutPath")
+    lateinit var libshoutPath: String
 
     private val broadcasterActors = mutableMapOf<SharedRadioId, BroadcasterActor>()
 
@@ -38,18 +45,6 @@ class BroadcasterInputEventHandler {
         logger.info(event.toString())
         when (event) {
             is SharedRadioCreated -> {
-                val config = IcecastConfiguration.newIcecastConfiguration()
-                        .invoke("icecast.jpthiery.techx.fr", 8000)
-                        .invoke(event.name)
-                        .auth("source", "sourcejpthiery")
-                        .sendMp3()
-                        .useHttp()
-                        .build()
-                val bindingLibShoutProvider = BindingLibShoutProvider(
-                        //"/home/jpthiery/workspace/perso/hermodr/broadcaster-icecast/target/broadcaster-icecast.so",
-                        "/Users/jpthiery/workspace/broadcaster/broadcaster-icecast/target/broadcaster-icecast.so",
-                        config
-                )
                 Music(
                         "${MusicScheme.LOCALFILE.scheme}/$defaultMusicPath".createMusicId(),
                         MusicScheme.LOCALFILE,
@@ -59,7 +54,7 @@ class BroadcasterInputEventHandler {
                 val playlist = BroadcastPlaylist()
                 val icecastBroadcaster = IcecastBroadcaster(
                         event.id,
-                        bindingLibShoutProvider.provide(),
+                        libShoutProvider.provide(),
                         Mp3MusicFile(
                                 "${MusicScheme.LOCALFILE.scheme}/$defaultMusicPath".createMusicId(),
                                 defaultMusicTitle,
@@ -70,6 +65,7 @@ class BroadcasterInputEventHandler {
                 )
                 vertx.deployVerticle(icecastBroadcaster) { result ->
                     if (result.succeeded()) {
+                        logger.info("Icecast broadcaster started.")
                         broadcasterActors[event.id] = BroadcasterActor(
                                 event.id,
                                 playlist,

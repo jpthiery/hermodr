@@ -8,6 +8,7 @@ import io.quarkus.vertx.ConsumeEvent
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.eventbus.Message
+import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.Executors
@@ -29,6 +30,9 @@ class MusicSourceOrchestrator : AbstractVerticle() {
     @Inject
     @field: Default
     lateinit var musicFileLocator: MusicFileLocator
+
+    @ConfigProperty(name = "radio.defaultMusic.path")
+    lateinit var defaultMusicPath: String
 
     @Inject
     @field: Default
@@ -58,7 +62,8 @@ class MusicSourceOrchestrator : AbstractVerticle() {
                             val outputFilePath = musicFileLocator.locate(event.music.id)
                             val outputFile = File(outputFilePath)
 
-                            if (!fetchingVerticle.containsKey(musicId)) {
+                            if (!fetchingVerticle.containsKey(musicId) &&
+                                    createDefaultMusicId() != musicId) {
                                 val musicSource = when (event.music.scheme) {
                                     MusicScheme.YOUTUBE -> YoutubeMusicSource()
                                     MusicScheme.LOCALFILE -> LocalFileMusicSource()
@@ -82,7 +87,7 @@ class MusicSourceOrchestrator : AbstractVerticle() {
             musicSource.fetch(musicAdded.music, outputFile).fold(
                     { err ->
                         logger.error("Unable to fetch ${musicAdded.music}", err)
-                        val command = RemovedMusicToSharedRadio(
+                        val command = RefusedMusicToSharedRadio(
                                 musicAdded.id,
                                 musicAdded.music.id
                         )
@@ -105,7 +110,8 @@ class MusicSourceOrchestrator : AbstractVerticle() {
                                         musicStore.scheme,
                                         musicStore.location,
                                         musicStore.artist,
-                                        musicStore.album
+                                        musicStore.album,
+                                        musicStore.duration
                                 )
                         )
                     }
@@ -115,6 +121,9 @@ class MusicSourceOrchestrator : AbstractVerticle() {
         fetchingVerticle[musicAdded.music.id] = musicSource
         executorService.submit(task)
     }
+
+    private fun createDefaultMusicId() : MusicId =
+            "${MusicScheme.LOCALFILE.scheme}/$defaultMusicPath".createMusicId()
 
 
 }

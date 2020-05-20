@@ -11,6 +11,7 @@ import com.github.jpthiery.hermodr.infra.broadcaster.icecast.binding.BindingLibS
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
 import io.vertx.core.eventbus.EventBus
+import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -23,6 +24,8 @@ class IcecastBroadcaster(
         private val eventBus: EventBus
 ) : AbstractVerticle(), Broadcaster {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     private var currentMusic: MusicFile = defaultMusicFile;
 
     private var currentInputStream = readMusic(defaultMusicFile)
@@ -30,14 +33,24 @@ class IcecastBroadcaster(
     private lateinit var t: Thread
 
     override fun start(startPromise: Promise<Void>?) {
+        logger.info("Starting icecaste broadcaster with libshout version ${bindingLibShout.libVersion()}")
         vertx.runOnContext {
             t = Thread() {
+                logger.debug("Starting thread to send music")
                 if (bindingLibShout.isNotConnected) {
-                    val openResult = bindingLibShout.open()
-                    openResult.errorMessage.ifPresent {
-                        val message = "Failed to open icecast due to following error: $it"
-                        eventBus.send(BusAddresses.APPLICATION_ERROR.address, message)
+                    try {
+                        val openResult = bindingLibShout.open()
+                        openResult.errorMessage.ifPresent {
+                            val message = "Failed to open icecast due to following error: $it"
+                            logger.error(message)
+                            eventBus.send(BusAddresses.APPLICATION_ERROR.address, message)
+                        }
+                    } catch (e: Throwable) {
+                        logger.error("Unable to open icecast connection due to following error", e)
+                        throw e
                     }
+                } else {
+                    logger.info("Icecast already connected.")
                 }
                 selectNextMusic()
                 startPromise?.complete()
@@ -64,7 +77,7 @@ class IcecastBroadcaster(
                         selectNextMusic()
                     }
                 }
-                println("Closing icecast broadcaster")
+                logger.warn("Closing icecast broadcaster")
                 bindingLibShout.close()
                 currentInputStream.close()
             }
@@ -100,6 +113,8 @@ class IcecastBroadcaster(
                 )
         )
         bindingLibShout.sendSongMetadata(currentMusic.title)
+        logger.debug("Select next track ${currentMusic.title}.")
+        logger.trace("icecast version lib ${bindingLibShout.libVersion()}.")
     }
 
     override fun skip() {

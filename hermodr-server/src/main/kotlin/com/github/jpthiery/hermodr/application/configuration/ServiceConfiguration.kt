@@ -1,8 +1,7 @@
 package com.github.jpthiery.hermodr.application.configuration
 
 import com.github.jpthiery.hermodr.application.CommandHandler
-import com.github.jpthiery.hermodr.application.DomainBusCodec
-import com.github.jpthiery.hermodr.domain.*
+import com.github.jpthiery.hermodr.domain.MusicId
 import com.github.jpthiery.hermodr.infra.broadcaster.icecast.BindingLibShoutProvider
 import com.github.jpthiery.hermodr.infra.broadcaster.icecast.IcecastConfiguration
 import com.github.jpthiery.hermodr.infra.musicsource.MusicFileLocator
@@ -12,6 +11,7 @@ import com.github.jpthiery.hermodr.infra.projection.SharedRadioDetails
 import io.quarkus.runtime.StartupEvent
 import io.vertx.core.Vertx
 import org.eclipse.microprofile.config.inject.ConfigProperty
+import org.slf4j.LoggerFactory
 import java.io.File
 import javax.enterprise.context.Dependent
 import javax.enterprise.event.Observes
@@ -20,6 +20,8 @@ import javax.inject.Singleton
 
 @Dependent
 class ServiceConfiguration {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     @ConfigProperty(name = "broadcaster.icecast.libshoutPath")
     lateinit var libshoutPath: String
@@ -55,6 +57,11 @@ class ServiceConfiguration {
         override fun locate(musicId: MusicId): String = "/tmp/hermodr/${musicId}.mp3"
     }
 
+    fun startbindingLibShoutProvider(@Observes startupEvent: StartupEvent, bindingLibShoutProvider: BindingLibShoutProvider) {
+        val bindingLibShout = bindingLibShoutProvider.provide()
+        logger.info("Binding Libshout use version {}", bindingLibShout.libVersion())
+    }
+
     fun startCommandHandler(@Observes startupEvent: StartupEvent, vertx: Vertx, commandHandler: CommandHandler) {
         vertx.deployVerticle(commandHandler)
     }
@@ -74,6 +81,5 @@ class ServiceConfiguration {
         }
         vertx.deployVerticle(musicDetailsRepository)
     }
-
 
 }

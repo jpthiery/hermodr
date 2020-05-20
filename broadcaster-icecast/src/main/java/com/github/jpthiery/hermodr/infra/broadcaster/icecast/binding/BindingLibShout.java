@@ -18,6 +18,7 @@ public class BindingLibShout {
                 loaded = true;
             }
         }
+        System.out.println("Using libshout " + libVersion());
         shout_init();
         shoutInstancePtr = shout_new();
     }

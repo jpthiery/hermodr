@@ -8,7 +8,7 @@ import {
   START_MUSIC,
   END_MUSIC,
   SUBMIT_MUSIC,
-  MUSIC_SUBMITTED
+  MUSIC_SUBMITTED, REMOVE_MUSIC
 } from "./actionTypes";
 
 
@@ -54,6 +54,13 @@ export const musicSubmitted = music => ({
 
 export const addMusic = response => ({
   type: ADD_MUSIC,
+  payload: {
+    music: response
+  }
+})
+
+export const removeMusic = response => ({
+  type: REMOVE_MUSIC,
   payload: {
     music: response
   }

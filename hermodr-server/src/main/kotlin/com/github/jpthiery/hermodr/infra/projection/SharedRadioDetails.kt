@@ -97,7 +97,10 @@ class SharedRadioDetails : AbstractVerticle() {
         element.put("id", it.id)
         element.put("title", it.title)
         element.put("source", it.scheme.name)
+        element.put("artist", it.artist)
+        element.put("album", it.album)
         if (it.scheme != MusicScheme.LOCALFILE) element.put("location", it.location)
+        if (it.duration > 0) element.put("duration", it.duration)
         element.put("validated", true)
         return element
     }

@@ -62,8 +62,10 @@ class MusicDetailsRepository : AbstractVerticle() {
                 res.put("artist", event.music.artist)
                 res.put("album", event.music.album)
                 res.put("validated", true)
+                if (event.music.duration > 0) res.put("duration", event.music.duration)
             }
-            else -> {}
+            else -> {
+            }
         }
         return res
     }

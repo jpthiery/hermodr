@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.eventbus.MessageCodec
 
-class DomainBusCodec<T>(
+open class DomainBusCodec<T>(
         private val classType: Class<T>
 ) : MessageCodec<T, T> {
+
     override fun decodeFromWire(pos: Int, buffer: Buffer?): T {
         val jsonLength = buffer?.getInt(pos + 4) ?: 0
         val json = buffer?.getString(pos + 4, pos + 4 + jsonLength)

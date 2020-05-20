@@ -84,7 +84,7 @@ export const AddMusic = ({defaultSelectedSource, radioId, musicsSubmittedToServe
                 return url.searchParams.get("v")
             }
         } catch (e) {
-
+            //  Nothing to do, reference may not be a youtube url.
         }
         return inputFieldValue
     }

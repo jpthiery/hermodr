@@ -33,14 +33,14 @@ class DomainConfiguration {
 
         eventBus.registerDefaultCodec(CreateSharedRadio::class.java, DomainBusCodec(CreateSharedRadio::class.java))
         eventBus.registerDefaultCodec(AddMusicToSharedRadio::class.java, DomainBusCodec(AddMusicToSharedRadio::class.java))
-        eventBus.registerDefaultCodec(RemovedMusicToSharedRadio::class.java, DomainBusCodec(RemovedMusicToSharedRadio::class.java))
+        eventBus.registerDefaultCodec(RefusedMusicToSharedRadio::class.java, DomainBusCodec(RefusedMusicToSharedRadio::class.java))
         eventBus.registerDefaultCodec(ValidateMusicToSharedRadio::class.java, DomainBusCodec(ValidateMusicToSharedRadio::class.java))
         eventBus.registerDefaultCodec(StartMusicToSharedRadio::class.java, DomainBusCodec(StartMusicToSharedRadio::class.java))
         eventBus.registerDefaultCodec(EndMusicToSharedRadio::class.java, DomainBusCodec(EndMusicToSharedRadio::class.java))
 
         eventBus.registerDefaultCodec(SharedRadioCreated::class.java, DomainBusCodec(SharedRadioCreated::class.java))
         eventBus.registerDefaultCodec(MusicAdded::class.java, DomainBusCodec(MusicAdded::class.java))
-        eventBus.registerDefaultCodec(MusicRemoved::class.java, DomainBusCodec(MusicRemoved::class.java))
+        eventBus.registerDefaultCodec(MusicRefused::class.java, DomainBusCodec(MusicRefused::class.java))
         eventBus.registerDefaultCodec(MusicValidated::class.java, DomainBusCodec(MusicValidated::class.java))
         eventBus.registerDefaultCodec(MusicStarted::class.java, DomainBusCodec(MusicStarted::class.java))
         eventBus.registerDefaultCodec(MusicFinished::class.java, DomainBusCodec(MusicFinished::class.java))

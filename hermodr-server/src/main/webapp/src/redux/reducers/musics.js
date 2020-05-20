@@ -1,6 +1,6 @@
 import {
   ADD_MUSIC,
-  MUSIC_SUBMITTED,
+  MUSIC_SUBMITTED, REMOVE_MUSIC,
   RESPONSE_LIST_RADIO,
   RESPONSE_RADIO_DETAIL,
   START_MUSIC,
@@ -51,6 +51,26 @@ export default function (state = initialState, action) {
         }
       })
       newPlaylist.push(music)
+      return {
+        ...state,
+        radios: {
+          ...state.radios,
+          [music.radioId]: {
+            ...state.radios[music.radioId],
+            playlist: newPlaylist
+          }
+        }
+      };
+    }
+    case REMOVE_MUSIC: {
+      const {music} = action.payload;
+      const oldPlaylist = state.radios[music.radioId].playlist
+      const newPlaylist = []
+      oldPlaylist.forEach(value => {
+        if (value.id !== music.id) {
+          newPlaylist.push(value)
+        }
+      })
       return {
         ...state,
         radios: {
