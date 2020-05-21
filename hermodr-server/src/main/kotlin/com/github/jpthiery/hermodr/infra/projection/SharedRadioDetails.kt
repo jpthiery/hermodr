@@ -75,7 +75,7 @@ class SharedRadioDetails : AbstractVerticle() {
                         val json = JsonObject()
                         json.put("id", view.id)
                         json.put("name", view.name)
-                        val encodedName = URLEncoder.encode(view.name, StandardCharsets.UTF_8)
+                        val encodedName = URLEncoder.encode(view.name, StandardCharsets.UTF_8).replace("+", "%20")
                         val urlToListen = "$icecastBaseUrlToListen/${encodedName}.m3u"
                         json.put("urlToListen", urlToListen)
                         view.currentPlay?.let {
