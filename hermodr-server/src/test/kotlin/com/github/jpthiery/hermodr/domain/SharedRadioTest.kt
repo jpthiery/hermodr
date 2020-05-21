@@ -1,9 +1,5 @@
 package com.github.jpthiery.hermodr.domain
 
-import com.github.jpthiery.hermodr.domain.SuccessDecideResultExpected.Companion.commandSucceeded
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.TestFactory
-
 internal class SharedRadioTest {
 
     /*
@@ -20,8 +16,8 @@ internal class SharedRadioTest {
         )
     }
     */
-
 }
+
 
 //  Alias
 fun decideTestOnSharedRadiotWith(): DecideStateAppender<SharedRadioCommand, SharedRadioState, SharedRadioEvent> = decideTestWith()
